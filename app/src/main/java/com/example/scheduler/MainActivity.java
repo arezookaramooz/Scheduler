@@ -31,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     public static final String MY_PREFS_NAME = "MyPrefsFile";
     private Toolbar toolbar;
-    LocalBroadcastManager localBroadcastManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
