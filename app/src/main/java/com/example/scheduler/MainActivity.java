@@ -19,6 +19,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.firebase.jobdispatcher.Constraint;
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
+import com.firebase.jobdispatcher.Job;
+import com.firebase.jobdispatcher.Lifetime;
+import com.firebase.jobdispatcher.RetryStrategy;
+import com.firebase.jobdispatcher.Trigger;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -36,24 +44,44 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         initViews();
         ComponentName componentName = new ComponentName(this, MyJobService.class);
         JobInfo info = new JobInfo.Builder(1, componentName)
-                .setPeriodic(2000)
+                .setPeriodic(5000)
                 .build();
-
         JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
         scheduler.schedule(info);
         int resultCode = scheduler.schedule(info);
         if (resultCode == JobScheduler.RESULT_SUCCESS) {
-
             Log.d(TAG, "JOb Scheduled");
         } else {
             Log.d(TAG, "Job Scheduling fail");
         }
 
+//        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
+//        Job job = createJob(dispatcher);
+//        dispatcher.mustSchedule(job);
     }
+
+//    public static Job createJob(FirebaseJobDispatcher dispatcher){
+//
+//        Log.d(TAG, "createJob: I'm here");
+//        Job job = dispatcher.newJobBuilder()
+//                .setLifetime(Lifetime.FOREVER)
+//                .setService(MyJobService.class)
+//                .setTag("UniqueTagForYourJob")
+//                .setReplaceCurrent(false)
+//                .setRecurring(false)
+//                .setTrigger(Trigger.executionWindow(5, 15))  //Trigger.NOW
+//                .setRetryStrategy(RetryStrategy.DEFAULT_LINEAR)
+////                .setConstraints(Constraint.ON_ANY_NETWORK, Constraint.DEVICE_CHARGING)
+//                .build();
+//        return job;
+//    }
+
+
+
+
 
 //    @Override
 //    public void onStart() {
@@ -76,8 +104,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             String message = intent.getStringExtra("message");
-            setUpRecyclerView(message);
-            Log.d("receiver", "Got message: " + message);
+            String time = intent.getStringExtra("time");
+            setUpRecyclerView(message, time);
         }
     };
 
@@ -97,26 +125,24 @@ public class MainActivity extends AppCompatActivity {
                 prefs.edit().clear().commit();
             }
         });
-
     }
 
-    private void setUpRecyclerView(String message) {
+    private void setUpRecyclerView(String message, String time) {
 
-        Adapter adapter = new Adapter(this, getArrayFromString(message));
+        Adapter adapter = new Adapter(this, getArrayFromString(message), getArrayFromString(time));
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter.notifyDataSetChanged();
     }
 
-    private ArrayList<String> getArrayFromString(String message) {
+    private ArrayList<String> getArrayFromString(String s) {
         ArrayList<String> members = new ArrayList<>();
 
-        String[] array = message.split("-");
+        String[] array = s.split("-");
 
         for (int i = 0; i < array.length; i++) {
             members.add(array[i]);
         }
-
         return members;
     }
 
